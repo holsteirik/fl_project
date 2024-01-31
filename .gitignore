@@ -1,9 +1,10 @@
 # Ignore data folder
+fl_project/data/
 /data/
 /docs/
 # Ignore specific files in fl_project folder
-/.gitattributes
-/.gitignore
-/.RData
-/.Rhistory
-/fl_project.Rproj
+fl_project/.gitattributes
+fl_project/.gitignore
+fl_project/.RData
+fl_project/.Rhistory
+fl_project/fl_project.Rproj
