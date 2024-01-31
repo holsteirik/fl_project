@@ -7,7 +7,6 @@ library(psych)
 library(haven)
 library(lavaanPlot)
 library(semTools)
-library(qgraph)
 library(semTools)
 
 # Read the data 
