@@ -1,5 +1,5 @@
 # Ignore data folder
-data/
+/data/
 /docs/
 # Ignore specific files in fl_project folder
 /.gitattributes
