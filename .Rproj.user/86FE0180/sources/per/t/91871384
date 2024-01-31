@@ -1,0 +1,26 @@
+{
+    "id": "91871384",
+    "path": "~/GitHub/fl_project/scripts/brief_cfa.R",
+    "project_path": "scripts/brief_cfa.R",
+    "type": "r_source",
+    "hash": "328683512",
+    "contents": "",
+    "dirty": false,
+    "created": 1705418519174.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "141,38",
+        "scrollLine": "124"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1706625613,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1706625613368,
+    "read_only": false,
+    "read_only_alternatives": []
+}
