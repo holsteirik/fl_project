@@ -11,8 +11,8 @@ library(semTools)
 
 # Read the data 
 
-data <- read_sav("C:/Users/eho093/OneDrive - UiT Office 365/Documents/GitHub/fl_project/data/forskerlinje_friskestudenter_bdi_og_insomni_variabler_retta_13.januar2024(2) (1).sav")
-#data <- read_sav("C:/Users/holst/OneDrive - UiT Office 365/Documents/GitHub/fl_project/data/forskerlinje_friskestudenter_bdi_og_insomni_variabler_retta_13.januar2024(2) (1).sav")
+data <- read_sav("data/forskerlinje_all_data_7feb.sav")
+
 options(max.print = 2500)
 describe(data)
 
@@ -49,11 +49,12 @@ model1 <- "EF =~
 
 # Running the model
 # Fit the model using RMLE estimator
-model1_fit <- sem(model1, meanstructure = TRUE, data = data, estimator = "MLR")
+model1_fit <- sem(model1, meanstructure = TRUE, data = data, estimator = "ML")
 
 
 # Providing output for the model
-model1_summary <- summary(model1_fit,  fit.measures = TRUE, standardized=TRUE, modindices = TRUE)
+model1_summary <- summary(model1_fit,  fit.measures = TRUE, standardized=TRUE, 
+                          modindices = TRUE)
 
 model1_summary
 plot_model(model1_fit, "std")
@@ -68,7 +69,7 @@ model2 <- "AI =~
             BRIEF_ORGANISERING_RAW
           AI ~~ MI"
 
-model2_fit <- sem(model2, meanstructure = TRUE, data =data,estimator = "MLR")
+model2_fit <- sem(model2, meanstructure = TRUE, data =data,estimator = "ML")
 summary(model2_fit, fit.measures = TRUE, standardized=TRUE, modindices = TRUE)
 model2_summary <- summary(model2_fit)
 plot_model(model2_fit, "std")
@@ -84,7 +85,7 @@ model3 <- "Behavioural regulation =~
             BRIEF_PLANLEGGING_RAW + BRIEF_OPPGAVEMONITORERING_RAW +
             BRIEF_ORGANISERING_RAW" 
 
-model3_fit <- sem(model3, meanstructure = TRUE, data = data, estimator = "MLR")
+model3_fit <- sem(model3, meanstructure = TRUE, data = data, estimator = "ML")
 
 
 
@@ -110,7 +111,8 @@ model4 <- "BR =~
             BRIEF_OPPGAVEMONITORERING_RAW +
             BRIEF_ORGANISERING_RAW" 
                         
-model4_fit <- lavaan::sem(model4, meanstructure = TRUE, data = data, estimator = "MLR")
+model4_fit <- lavaan::sem(model4, meanstructure = TRUE, data = data, 
+                          estimator = "ML")
 
 summary(model4_fit, fit.measures = TRUE, standardized=TRUE, modindices = TRUE)
 model4_summary <- summary(model4_fit)
@@ -137,10 +139,14 @@ cat("CFI for Model 4:", cfi_model4, "\n")
 
 
 # Compute and store the fit measures including the RMSEA interval
-fit_measures_model1 <- fitMeasures(model1_fit, c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
-fit_measures_model2 <- fitMeasures(model2_fit, c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
-fit_measures_model3 <- fitMeasures(model3_fit, c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
-fit_measures_model4 <- fitMeasures(model4_fit, c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
+fit_measures_model1 <- fitMeasures(model1_fit, 
+              c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
+fit_measures_model2 <- fitMeasures(model2_fit, 
+              c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
+fit_measures_model3 <- fitMeasures(model3_fit, 
+              c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
+fit_measures_model4 <- fitMeasures(model4_fit, 
+              c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
 
 # Print the fit measures for each model
 print(fit_measures_model1)
