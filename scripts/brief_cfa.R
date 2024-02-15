@@ -8,10 +8,11 @@ library(haven)
 library(lavaanPlot)
 library(semTools)
 library(semTools)
+library(tidyverse)
 
 # Read the data 
 
-data <- read_sav("data/forskerlinje_all_data_7feb.sav")
+data <- read_sav("data/forskerlinje_all_data_8feb.sav")
 
 options(max.print = 2500)
 describe(data)
