@@ -8,7 +8,10 @@ library(car)
 library(apaTables)
 library(modelsummary)
 library(ggplot2)
+library(lm.beta)
+
 data <- read_sav("data/forskerlinje_all_data_8feb.sav")
+
 
 options(max.print = 2500)
 describe(data)
@@ -29,8 +32,8 @@ model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(KJONN) + extra + agree +
 
 
 model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(KJONN) + extra + agree + 
-                      consci + neuro + open + BDIsum + BAIsum + SumbisNoFour, 
-                    data = data)
+                 consci + neuro + open + BDIsum + BAIsum + SumbisNoFour, 
+               data = data)
 
 univariate_bri <- Anova(model_bri, type = "III")
 univariate_mi <- Anova(model_mi, type = "III")
@@ -73,7 +76,7 @@ apa.aov.table(model_mi, filename = "Tabell univariate BRI.doc", table.number = 2
 
 
 
-
+################################################################################
 # Regression plot
 modelplot(model_bri, coef_omit = "Interc")
 modelplot(model_mi, coef_omit = "Interc")
@@ -94,3 +97,130 @@ plot <- modelplot(models, coef_omit = "Intercept") +
        y = "Variables")
 print(plot)
 
+
+
+################################################################################
+# Calculate standardized coefficients for model_bri
+std_coefs_bri <- lm.beta(model_bri)
+
+# Calculate standardized coefficients for model_mi
+std_coefs_mi <- lm.beta(model_mi)
+
+# Extract standardized coefficients for plotting
+plot_coefs_bri <- coef(std_coefs_bri)
+plot_coefs_mi <- coef(std_coefs_mi)
+
+# Create a data frame for plotting
+plot_data <- data.frame(
+  term = names(plot_coefs_bri),
+  estimate_bri = plot_coefs_bri,
+  estimate_mi = plot_coefs_mi
+)
+# Plot using ggplot
+plot <- ggplot(plot_data, aes(y = term)) +
+  geom_point(aes(x = estimate_bri), color = "red") +
+  geom_point(aes(x = estimate_mi), color = "blue") +
+  labs(title = "Regression plot",
+       x = "Standardized Regression Coefficients",
+       y = "Variables")
+
+# Print the plot
+print(plot)
+
+
+
+
+###############################################################################
+# Function to calculate standardized coefficients and their CIs
+get_standardized_coefs <- function(model) {
+  coefs <- summary(model)$coefficients
+  # Calculate standard deviations for predictors and response
+  sd_x <- sapply(model$model[-1], sd, na.rm = TRUE)
+  sd_y <- sd(model$model[[1]], na.rm = TRUE)
+  # Standardize coefficients
+  standardized_coefs <- coefs[, "Estimate"] * sd_x / sd_y
+  # Calculate standard errors for standardized coefficients
+  standardized_se <- coefs[, "Std. Error"] * sd_x / sd_y
+  # Calculate 95% CIs
+  ci_lower <- standardized_coefs - qt(0.975, df = df.residual(model)) * standardized_se
+  ci_upper <- standardized_coefs + qt(0.975, df = df.residual(model)) * standardized_se
+  # Return a data frame
+  data.frame(
+    term = rownames(coefs),
+    estimate = standardized_coefs,
+    ci_lower = ci_lower,
+    ci_upper = ci_upper
+  )
+}
+plot_data
+
+############################
+
+# Plot using ggplot with error bars for confidence intervals
+plot <- ggplot(plot_data, aes(y = term)) +
+  geom_point(aes(x = estimate_bri), color = "red") +
+  geom_point(aes(x = estimate_mi), color = "blue") +
+  geom_errorbarh(aes(xmin = ci_lower_bri, xmax = ci_upper_bri), height = 0.1, color = "red") +
+  geom_errorbarh(aes(xmin = ci_lower_mi, xmax = ci_upper_mi), height = 0.1, color = "blue") +
+  labs(title = "Regression plot",
+       x = "Standardized Regression Coefficients",
+       y = "Variables")
+
+# Print the plot
+print(plot)
+
+
+####################
+# Calculate standardized coefficients
+std_coefs_bri <- lm.beta(model_bri)
+std_coefs_mi <- lm.beta(model_mi)
+
+# Calculate 95% confidence intervals
+ci_bri <- confint(std_coefs_bri)
+ci_mi <- confint(std_coefs_mi)
+
+# Display standardized coefficients and confidence intervals
+summary(std_coefs_bri)
+summary(std_coefs_mi)
+
+# Display confidence intervals
+ci_bri
+ci_mi
+#######################
+# Assuming 'data' is your data frame containing the variables
+# Assuming 'sjstats', 'sjPlot', and 'modelplot' packages are installed
+
+# Install and load the 'sjstats' package
+install.packages("sjstats")
+library(sjstats)
+
+# Fit the multivariate linear models
+model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(KJONN) + extra + agree + 
+                  consci + neuro + open + BDIsum + BAIsum + SumbisNoFour, 
+                data = data)
+
+model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(KJONN) + extra + agree + 
+                 consci + neuro + open + BDIsum + BAIsum + SumbisNoFour, 
+               data = data)
+
+# Calculate standardized coefficients using 'standardize'
+std_coefs_bri <- standardize(model_bri)
+std_coefs_mi <- standardize(model_mi)
+
+# Calculate 95% confidence intervals
+ci_bri <- confint(std_coefs_bri)
+ci_mi <- confint(std_coefs_mi)
+
+# Create a data frame for plotting
+plot_data <- data.frame(
+  term = rownames(coef(std_coefs_bri)),
+  estimate_bri = coef(std_coefs_bri),
+  ci_lower_bri = ci_bri[, 1],
+  ci_upper_bri = ci_bri[, 2],
+  estimate_mi = coef(std_coefs_mi),
+  ci_lower_mi = ci_mi[, 1],
+  ci_upper_mi = ci_mi[, 2]
+)
+
+# Print the data frame
+print(plot_data)
