@@ -1,5 +1,3 @@
-library(igraph)
-library(qgraph)
 library(haven)
 library(psych)
 library(ggplot2)
@@ -9,6 +7,7 @@ library(apaTables)
 library(modelsummary)
 library(ggplot2)
 library(lm.beta)
+library(jtools)
 
 data <- read_sav("data/forskerlinje_all_data_8feb.sav")
 
@@ -26,13 +25,13 @@ multivariate_type_III <- Anova(model, type = "III")
 print(multivariate_type_III)
 
 # Univariate results
-model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(KJONN) + extra + agree + 
-                  consci + neuro + open + BDIsum + BAIsum + SumbisNoFour, 
+
+model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(KJONN) + SumbisNoFour + consci + 
+                  agree + open + extra + neuro + BAIsum + BDIsum, 
                 data = data)
 
-
-model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(KJONN) + extra + agree + 
-                 consci + neuro + open + BDIsum + BAIsum + SumbisNoFour, 
+model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(KJONN) + SumbisNoFour + consci + 
+                 agree + open + extra + neuro + BAIsum + BDIsum, 
                data = data)
 
 univariate_bri <- Anova(model_bri, type = "III")
@@ -72,28 +71,27 @@ print(univariate_mi)
 
 # Generate an APA-style table 
 apa.aov.table(model_bri, filename = "Tabell univariate BRI.doc", table.number = 1)
-apa.aov.table(model_mi, filename = "Tabell univariate BRI.doc", table.number = 2)
+apa.aov.table(model_mi, filename = "Tabell univariate MI.doc", table.number = 2)
 
 
 
 ################################################################################
 # Regression plot
-modelplot(model_bri, coef_omit = "Interc")
-modelplot(model_mi, coef_omit = "Interc")
-
 models <-list(
-  "Behavioural regulation" = lm(model_bri), 
-  "Metacogntion" = lm(model_mi))
-
+  "BRI" = lm(model_bri), 
+  "MI" = lm(model_mi))
+model_bri
 # Combine into list
 modelsummary(models, statistic = "conf.int")
 
-# Plot enkel
-modelplot(models, coef_omit = "Interc")
-
-plot <- modelplot(models, coef_omit = "Intercept") +
+# Rename variables
+cm <- c('KJONN' = 'SEX',
+        'BDIsum' = 'BDI',
+        "BAI_sum" = "BAI")
+# Plot
+plot <- modelplot(models, coef_omit = "Intercept", coef_map = cm) +
   labs(title = "Regression plot",
-       x = "Regression coeffcients",
+       x = "Regression coeffcient",
        y = "Variables")
 print(plot)
 
@@ -187,12 +185,13 @@ summary(std_coefs_mi)
 ci_bri
 ci_mi
 #######################
-# Assuming 'data' is your data frame containing the variables
-# Assuming 'sjstats', 'sjPlot', and 'modelplot' packages are installed
-
-# Install and load the 'sjstats' package
-install.packages("sjstats")
-library(sjstats)
+# Function to manually standardize coefficients
+standardize_manual <- function(model) {
+  coef_table <- coef(model)
+  std_devs <- sapply(model$model, function(x) if (is.numeric(x)) sd(x, na.rm = TRUE) else NA)
+  std_coefs <- coef_table / std_devs
+  return(data.frame(std_coefs))
+}
 
 # Fit the multivariate linear models
 model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(KJONN) + extra + agree + 
@@ -203,24 +202,34 @@ model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(KJONN) + extra + agree +
                  consci + neuro + open + BDIsum + BAIsum + SumbisNoFour, 
                data = data)
 
-# Calculate standardized coefficients using 'standardize'
-std_coefs_bri <- standardize(model_bri)
-std_coefs_mi <- standardize(model_mi)
+# Calculate standardized coefficients using manual standardization
+std_coefs_bri <- standardize_manual(model_bri)
+std_coefs_mi <- standardize_manual(model_mi)
 
-# Calculate 95% confidence intervals
-ci_bri <- confint(std_coefs_bri)
-ci_mi <- confint(std_coefs_mi)
+# Function to calculate confidence intervals
+calculate_ci <- function(std_coefs, model) {
+  se <- sqrt(diag(vcov(model)))
+  ci <- std_coefs - qnorm(0.975) * se
+  ci <- cbind(ci, std_coefs + qnorm(0.975) * se)
+  colnames(ci) <- c("Lower", "Upper")
+  return(ci)
+}
+
+# Calculate confidence intervals
+ci_bri <- calculate_ci(std_coefs_bri$std_coefs, model_bri)
+ci_mi <- calculate_ci(std_coefs_mi$std_coefs, model_mi)
 
 # Create a data frame for plotting
 plot_data <- data.frame(
-  term = rownames(coef(std_coefs_bri)),
-  estimate_bri = coef(std_coefs_bri),
-  ci_lower_bri = ci_bri[, 1],
-  ci_upper_bri = ci_bri[, 2],
-  estimate_mi = coef(std_coefs_mi),
-  ci_lower_mi = ci_mi[, 1],
-  ci_upper_mi = ci_mi[, 2]
+  term = rownames(std_coefs_bri),
+  estimate_bri = std_coefs_bri$std_coefs,
+  ci_lower_bri = ci_bri[, "Lower"],
+  ci_upper_bri = ci_bri[, "Upper"],
+  estimate_mi = std_coefs_mi$std_coefs,
+  ci_lower_mi = ci_mi[, "Lower"],
+  ci_upper_mi = ci_mi[, "Upper"]
 )
 
 # Print the data frame
 print(plot_data)
+
