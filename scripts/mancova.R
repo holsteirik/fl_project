@@ -7,7 +7,7 @@ library(apaTables)
 library(modelsummary)
 library(ggplot2)
 library(lm.beta)
-library(jtools)
+
 
 data <- read_sav("data/forskerlinje_all_data_8feb.sav")
 
@@ -84,12 +84,9 @@ model_bri
 # Combine into list
 modelsummary(models, statistic = "conf.int")
 
-# Rename variables
-cm <- c('KJONN' = 'SEX',
-        'BDIsum' = 'BDI',
-        "BAI_sum" = "BAI")
+
 # Plot
-plot <- modelplot(models, coef_omit = "Intercept", coef_map = cm) +
+plot <- modelplot(models, coef_omit = "Intercept") +
   labs(title = "Regression plot",
        x = "Regression coeffcient",
        y = "Variables")
@@ -126,110 +123,28 @@ plot <- ggplot(plot_data, aes(y = term)) +
 print(plot)
 
 
+lm.beta(model_bri, complete.standardization = TRUE)
+confint(std_coefs_mi, level = 0.95)
 
+# Install the package if not already installed
+library(betaDelta)
+# Assuming your standardized betas are stored in a data frame named 'std_betas'
+ci_betas <- betaDelta(std_coefs_bri)
 
+# The 'ci_betas' object will contain confidence intervals for all coefficients at different levels of significance (e.g., 95%, 99%)
+summary(ci_betas)
 ###############################################################################
-# Function to calculate standardized coefficients and their CIs
-get_standardized_coefs <- function(model) {
-  coefs <- summary(model)$coefficients
-  # Calculate standard deviations for predictors and response
-  sd_x <- sapply(model$model[-1], sd, na.rm = TRUE)
-  sd_y <- sd(model$model[[1]], na.rm = TRUE)
-  # Standardize coefficients
-  standardized_coefs <- coefs[, "Estimate"] * sd_x / sd_y
-  # Calculate standard errors for standardized coefficients
-  standardized_se <- coefs[, "Std. Error"] * sd_x / sd_y
-  # Calculate 95% CIs
-  ci_lower <- standardized_coefs - qt(0.975, df = df.residual(model)) * standardized_se
-  ci_upper <- standardized_coefs + qt(0.975, df = df.residual(model)) * standardized_se
-  # Return a data frame
-  data.frame(
-    term = rownames(coefs),
-    estimate = standardized_coefs,
-    ci_lower = ci_lower,
-    ci_upper = ci_upper
-  )
-}
-plot_data
-
-############################
-
-# Plot using ggplot with error bars for confidence intervals
-plot <- ggplot(plot_data, aes(y = term)) +
-  geom_point(aes(x = estimate_bri), color = "red") +
-  geom_point(aes(x = estimate_mi), color = "blue") +
-  geom_errorbarh(aes(xmin = ci_lower_bri, xmax = ci_upper_bri), height = 0.1, color = "red") +
-  geom_errorbarh(aes(xmin = ci_lower_mi, xmax = ci_upper_mi), height = 0.1, color = "blue") +
-  labs(title = "Regression plot",
-       x = "Standardized Regression Coefficients",
-       y = "Variables")
-
-# Print the plot
-print(plot)
-
-
-####################
-# Calculate standardized coefficients
-std_coefs_bri <- lm.beta(model_bri)
-std_coefs_mi <- lm.beta(model_mi)
-
-# Calculate 95% confidence intervals
-ci_bri <- confint(std_coefs_bri)
-ci_mi <- confint(std_coefs_mi)
-
-# Display standardized coefficients and confidence intervals
-summary(std_coefs_bri)
-summary(std_coefs_mi)
-
-# Display confidence intervals
-ci_bri
-ci_mi
-#######################
-# Function to manually standardize coefficients
-standardize_manual <- function(model) {
-  coef_table <- coef(model)
-  std_devs <- sapply(model$model, function(x) if (is.numeric(x)) sd(x, na.rm = TRUE) else NA)
-  std_coefs <- coef_table / std_devs
-  return(data.frame(std_coefs))
-}
-
-# Fit the multivariate linear models
-model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(KJONN) + extra + agree + 
-                  consci + neuro + open + BDIsum + BAIsum + SumbisNoFour, 
-                data = data)
-
-model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(KJONN) + extra + agree + 
-                 consci + neuro + open + BDIsum + BAIsum + SumbisNoFour, 
+model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(KJONN) + SumbisNoFour + consci + 
+                 agree + open + extra + neuro + BAIsum + BDIsum, 
                data = data)
 
-# Calculate standardized coefficients using manual standardization
-std_coefs_bri <- standardize_manual(model_bri)
-std_coefs_mi <- standardize_manual(model_mi)
+# Extract coefficients and standard errors
+coef_mi <- coef(model_mi)
+se_mi <- sqrt(diag(vcov(model_mi)))
 
-# Function to calculate confidence intervals
-calculate_ci <- function(std_coefs, model) {
-  se <- sqrt(diag(vcov(model)))
-  ci <- std_coefs - qnorm(0.975) * se
-  ci <- cbind(ci, std_coefs + qnorm(0.975) * se)
-  colnames(ci) <- c("Lower", "Upper")
-  return(ci)
-}
+# Standardize coefficients manually
+std_coefs_mi <- coef_mi / se_mi
 
-# Calculate confidence intervals
-ci_bri <- calculate_ci(std_coefs_bri$std_coefs, model_bri)
-ci_mi <- calculate_ci(std_coefs_mi$std_coefs, model_mi)
-
-# Create a data frame for plotting
-plot_data <- data.frame(
-  term = rownames(std_coefs_bri),
-  estimate_bri = std_coefs_bri$std_coefs,
-  ci_lower_bri = ci_bri[, "Lower"],
-  ci_upper_bri = ci_bri[, "Upper"],
-  estimate_mi = std_coefs_mi$std_coefs,
-  ci_lower_mi = ci_mi[, "Lower"],
-  ci_upper_mi = ci_mi[, "Upper"]
-)
-
-# Print the data frame
-print(plot_data)
+# Print the standardized coefficients
+print(std_coefs_mi)
 
