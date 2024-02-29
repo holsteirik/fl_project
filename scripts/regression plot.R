@@ -6,7 +6,7 @@ library(car)
 library(apaTables)
 library(modelsummary)
 library(lm.beta)
-
+library(dplyr)
 
 data_raw <- read_sav("data/forskerlinje_all_data_8feb.sav")
 
