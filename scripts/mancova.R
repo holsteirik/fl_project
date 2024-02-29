@@ -76,7 +76,7 @@ apa.aov.table(model_mi, filename = "Tabell univariate MI.doc", table.number = 2)
 
 
 ################################################################################
-# Regression plot
+# Regression plot with unstandardized coefficients
 models <-list(
   "BRI" = lm(model_bri), 
   "MI" = lm(model_mi))
@@ -111,7 +111,7 @@ plot_data <- data.frame(
   estimate_bri = plot_coefs_bri,
   estimate_mi = plot_coefs_mi
 )
-# Plot using ggplot
+# Plot 
 plot <- ggplot(plot_data, aes(y = term)) +
   geom_point(aes(x = estimate_bri), color = "red") +
   geom_point(aes(x = estimate_mi), color = "blue") +
@@ -126,25 +126,4 @@ print(plot)
 lm.beta(model_bri, complete.standardization = TRUE)
 confint(std_coefs_mi, level = 0.95)
 
-# Install the package if not already installed
-library(betaDelta)
-# Assuming your standardized betas are stored in a data frame named 'std_betas'
-ci_betas <- betaDelta(std_coefs_bri)
-
-# The 'ci_betas' object will contain confidence intervals for all coefficients at different levels of significance (e.g., 95%, 99%)
-summary(ci_betas)
 ###############################################################################
-model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(KJONN) + SumbisNoFour + consci + 
-                 agree + open + extra + neuro + BAIsum + BDIsum, 
-               data = data)
-
-# Extract coefficients and standard errors
-coef_mi <- coef(model_mi)
-se_mi <- sqrt(diag(vcov(model_mi)))
-
-# Standardize coefficients manually
-std_coefs_mi <- coef_mi / se_mi
-
-# Print the standardized coefficients
-print(std_coefs_mi)
-
