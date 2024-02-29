@@ -5,6 +5,9 @@ library(psych)
 library(ggplot2)
 library(tidyr)
 library(dplyr)
+library(apaTables)
+library(corrplot)
+
 data <- read_sav("data/forskerlinje_all_data_8feb.sav")
 
 options(max.print = 2500)
@@ -105,3 +108,15 @@ for (variable in variables) {
 
 # Print summary statistics
 print(summary_stats)
+
+###########################################################
+# Corrolatations
+
+cor_matrix <- round(cor(na.omit(data[c("BRIEF_AI_T", "BRIEF_MI_T", "BDIsum", 
+                                       "BAIsum", "neuro", "extra", "open", 
+                                       "agree", "consci", "SumbisNoFour", "KJONN")], 
+                                method = "spearman"), 
+                        use = "pairwise.complete.obs"), 2)
+
+cor_matrix
+
