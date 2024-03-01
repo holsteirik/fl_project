@@ -16,7 +16,7 @@ describe(data)
 
 # Rename variables
 names(data_raw)[names(data_raw) == "KJONN"] <- "Sex"
-names(data_raw)[names(data_raw) == "SumbisNoFour"] <- "Insomnia"
+names(data_raw)[names(data_raw) == "SumbisNoFour"] <- "BIS"
 names(data_raw)[names(data_raw) == "consci"] <- "Conscientiousness"
 names(data_raw)[names(data_raw) == "agree"] <- "Agreeableness"
 names(data_raw)[names(data_raw) == "open"] <- "Openness"
@@ -29,7 +29,7 @@ names(data_raw)[names(data_raw) == "BDIsum"] <- "BDI"
 model <- manova(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + Extraversion + 
                   Agreeableness +
                   Conscientiousness + Neuroticism + Openness + BDI + BAI +
-                  Insomnia,
+                  BIS,
                 data = data_raw)
 
 #  mutate to standardized 
@@ -37,18 +37,18 @@ data_raw |>
   mutate(
     across(c(BRIEF_AI_T, BRIEF_MI_T, Conscientiousness, Agreeableness, Openness,
              Extraversion, Neuroticism,
-             BDI, BAI, Insomnia),
+             BDI, BAI, BIS),
            scale), .before=1) -> 
   data
 
 
 # Univariate results
 
-model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(Sex) + Insomnia + Conscientiousness + 
+model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(Sex) + BIS + Conscientiousness + 
                   Agreeableness + Openness + Extraversion + Neuroticism + BAI + BDI, 
                 data = data)
 
-model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(Sex) + Insomnia + Conscientiousness + 
+model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(Sex) + BIS + Conscientiousness + 
                  Agreeableness + Openness + Extraversion + Neuroticism + BAI + BDI, 
                data = data)
 
@@ -68,7 +68,7 @@ modelsummary(models, statistic = "conf.int")
 # Your existing code for creating the plot (replace "" with your actual code)
 plot <- modelplot(models, coef_omit = "Intercept") +
   labs(title = "",
-       x = "",
+       x = "Regression coefficient",
        y = "Variables") +
   geom_vline(xintercept = 0, alpha = .45, linetype = "dashed") +
   theme(

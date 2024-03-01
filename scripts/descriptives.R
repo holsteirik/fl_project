@@ -29,7 +29,9 @@ bin_open <- 2 * IQR(data$open, na.rm = TRUE) / (length(data$open)^(1/3))
 bin_agree <- 2 * IQR(data$agree, na.rm = TRUE) / (length(data$agree)^(1/3))
 bin_consci <- 2 * IQR(data$consci, na.rm = TRUE) / (length(data$consci)^(1/3))
 bin_sumbis_no_four <- 2 * IQR(data$SumbisNoFour, na.rm = TRUE) / (length(data$SumbisNoFour)^(1/3))
+bin_KJONN <- 2 * IQR(data$KJONN, na.rm = TRUE) / (length(data$SumbisNoFour)^(1/3))
 bin_agree = bin_open
+bin_KJONN = 0.7
 # Create histograms for each variable
 g_brief_ai <- ggplot(data, aes(x = BRIEF_AI_T)) +
   geom_histogram(binwidth = bin_brief_ai, fill = "steelblue", color = "white") +
@@ -71,6 +73,10 @@ g_sumbis_no_four <- ggplot(data, aes(x = SumbisNoFour)) +
   geom_histogram(binwidth = bin_sumbis_no_four, fill = "steelblue", color = "white") +
   labs(title = "Histogram of SumbisNoFour", x = "SumbisNoFour", y = "Frequency")
 
+g_KJONN <- ggplot(data, aes(x = KJONN)) +
+  geom_histogram(binwidth = bin_KJONN, fill = "steelblue", color = "white") +
+  labs(title = "Histogram of KJONN", x = "KJONN", y = "Frequency")
+
 g_brief_ai
 g_brief_mi
 g_bdi_sum
@@ -81,7 +87,7 @@ g_open
 g_agree
 g_consci
 g_sumbis_no_four
-
+g_KJONN
 # Assuming 'data' is your dataset
 
 variables <- c("BRIEF_AI_T", "BRIEF_MI_T", "BDIsum", "BAIsum", "neuro", "extra", "open", "agree", "consci", "SumbisNoFour")
@@ -120,3 +126,17 @@ cor_matrix <- round(cor(na.omit(data[c("BRIEF_AI_T", "BRIEF_MI_T", "BDIsum",
 
 cor_matrix
 
+cor_matrix <- round(cor(na.omit(data[c("BRIEF_AI_T", "BRIEF_MI_T", "BDIsum", 
+                                       "BAIsum", "neuro", "extra", "open", 
+                                       "agree", "consci", "SumbisNoFour", "KJONN")], 
+                                method = "spearman"), 
+                        use = "pairwise.complete.obs"), 2)
+
+# Create an APA-style table
+apa_table <- apa.table(cor_matrix, 
+                       table.number = 1, 
+                       title = "Correlation Matrix", 
+                       show.row.names = FALSE)
+
+# Print the APA-style table
+print(apa_table, style = "apa")
