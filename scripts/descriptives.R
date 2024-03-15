@@ -8,7 +8,7 @@ library(dplyr)
 library(apaTables)
 library(corrplot)
 
-data <- read_sav("data/forskerlinje_all_data_8feb.sav")
+data <- read_sav("data/forskerlinje_friskestudenter_bdi_og_insomni_variabler_retta_01.mars2024_runar.sav")
 
 options(max.print = 2500)
 describe(data)
