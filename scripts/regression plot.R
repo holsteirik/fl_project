@@ -13,6 +13,7 @@ data_raw <- read_sav("data/forskerlinje_friskestudenter_bdi_og_insomni_variabler
 
 options(max.print = 2500)
 describe(data)
+describe(data_raw)
 
 # Rename variables
 names(data_raw)[names(data_raw) == "KJONN"] <- "Sex"
@@ -104,7 +105,8 @@ models <-list(
   "Metacognition" = lm(model_mi_uten),
   "Behavioral regulation" = lm(model_bri_uten)
   )
-   
+##############################################
+
   
 model_bri
 # Combine into list
@@ -190,3 +192,46 @@ ggplot(coefficients_df, aes(y = Parameter, x = Estimate, color = DependentVariab
   theme_minimal() +
   labs(y = "Predictor", x = "Estimate", color = "Dependent Variable") +
   theme(axis.text.y = element_text(angle = 0)) # No need to rotate y-axis labels
+#################################################
+# Load the ggplot2 package
+# Load the ggplot2 package
+# Load the ggplot2 package
+library(ggplot2)
+
+# Create a data frame with the parameter estimates and confidence intervals
+coefficients_df <- data.frame(
+  DependentVariable = rep(c("Behavioral Regulation", "Metacognition"), each = 7),
+  Parameter = c("Depression", "Anxiety", "Neuroticism", "Agreeableness", "Conscientiousness", "Insomnia", "Sex",
+                "Depression", "Anxiety", "Neuroticism", "Agreeableness", "Conscientiousness", "Insomnia", "Sex"),
+  Estimate = c(0.293, 0.158, 0.144, -0.152, -0.219, -0.115, 0.248,
+               0.186, 0.106, -0.013, 0.006, -0.542, 0.019, 0.014),
+  LowerCI = c(0.160, 0.032, 0.034, -0.248, -0.317, -0.231, 0.045,
+              0.063, -0.011, -0.115, -0.083, -0.633, -0.088, -0.174),
+  UpperCI = c(0.427, 0.285, 0.254, -0.055, -0.121, 0.001, 0.450,
+              0.310, 0.223, 0.088, 0.096, -0.452, 0.126, 0.201)
+)
+
+# Reverse the factor levels for Parameter to get the desired order from top to bottom
+coefficients_df$Parameter <- factor(
+  coefficients_df$Parameter,
+  levels = rev(c("Depression", "Anxiety", "Neuroticism", "Agreeableness", "Conscientiousness", "Insomnia", "Sex"))
+)
+
+# Set the factor levels for DependentVariable to switch the order
+coefficients_df$DependentVariable <- factor(
+  coefficients_df$DependentVariable,
+  levels = c("Metacognition", "Behavioral Regulation")
+)
+
+# Create the coefficient plot with horizontal confidence intervals and dodging
+dodge <- position_dodge(width = 0.25)
+
+ggplot(coefficients_df, aes(y = Parameter, x = Estimate, color = DependentVariable)) +
+  geom_point(position = dodge) +
+  geom_errorbarh(aes(xmin = LowerCI, xmax = UpperCI), height = 0.2, position = dodge) +
+  geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.3) +
+  theme_minimal() +
+  labs(y = "Predictor", x = "Estimate", color = "Dependent Variable") +
+  theme(axis.text.y = element_text(angle = 0)) +
+  scale_color_discrete(breaks = rev(levels(coefficients_df$DependentVariable))) # Reverse the legend order
+
