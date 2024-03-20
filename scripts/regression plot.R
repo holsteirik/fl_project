@@ -39,7 +39,11 @@ data_raw |>
            scale), .before=1) -> 
   data
 
-
+#make mancova model
+model <- manova(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + 
+                  Agreeableness + Conscientiousness + Neuroticism + 
+                  Depression + Anxiety + Insomnia, data = data)
+summary(model)
 # Univariate results
 
 model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(Sex) + Insomnia + Conscientiousness + 
@@ -97,8 +101,8 @@ print(plot)
 ###############################################################################
 # Regression plot 
 models <-list(
-  "Metacognition" = lm(model_mi),
-  "Behavioral regulation" = lm(model_bri)
+  "Metacognition" = lm(model_mi_uten),
+  "Behavioral regulation" = lm(model_bri_uten)
   )
    
   
@@ -125,5 +129,64 @@ plot <- modelplot(models, coef_omit = "Intercept") +
 print(plot)
 
 ##########################################################
+library(ggplot2)
+library(broom)
 
+# Fit separate linear models for each dependent variable without an intercept
+model_BRIEF_AI_T <- lm(BRIEF_AI_T ~ 0 + factor(Sex) + Agreeableness + 
+                         Conscientiousness + Neuroticism + Depression + 
+                         Anxiety + Insomnia, data = data)
 
+model_BRIEF_MI_T <- lm(BRIEF_MI_T ~ 0 + factor(Sex) + Agreeableness + 
+                         Conscientiousness + Neuroticism + Depression + 
+                         Anxiety + Insomnia, data = data)
+
+# Extract coefficients and confidence intervals
+tidy_BRIEF_AI_T <- tidy(model_BRIEF_AI_T, conf.int = TRUE)
+tidy_BRIEF_MI_T <- tidy(model_BRIEF_MI_T, conf.int = TRUE)
+
+# Add a column to indicate the dependent variable
+tidy_BRIEF_AI_T$Variable <- 'BRIEF_AI_T'
+tidy_BRIEF_MI_T$Variable <- 'BRIEF_MI_T'
+
+# Combine the results
+coefficients_df <- rbind(tidy_BRIEF_AI_T, tidy_BRIEF_MI_T)
+
+# Create the coefficient plot with horizontal confidence intervals and dodging
+dodge <- position_dodge(width = 0.25) # Adjust the width to dodge as needed
+
+ggplot(coefficients_df, aes(y = term, x = estimate, color = Variable)) +
+  geom_point(position = dodge) +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high, height = 0), position = dodge) +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  theme_minimal() +
+  labs(y = "Predictor", x = "Estimate", color = "Dependent Variable") +
+  theme(axis.text.y = element_text(angle = 0)) # No need to rotate y-axis labels
+
+################################################################
+# Parametre fra spss *sigh*
+library(ggplot2)
+
+# Create a data frame with the parameter estimates and confidence intervals, excluding the intercept
+coefficients_df <- data.frame(
+  DependentVariable = rep(c("BRIEF_AI_T", "BRIEF_MI_T"), each = 6),
+  Parameter = c("BDIsum", "BAIsum", "SumbisNoFour", "agree", "consci", "neuro",
+                "BDIsum", "BAIsum", "SumbisNoFour", "agree", "consci", "neuro"),
+  Estimate = c(0.339, 0.184, -0.134, -1.716, -2.044, 1.339,
+               0.225, 0.128, 0.023, 0.075, -5.285, -0.128),
+  LowerCI = c(0.185, 0.037, -0.270, -2.805, -2.959, 0.319,
+              0.075, -0.014, -0.108, -0.976, -6.168, -1.113),
+  UpperCI = c(0.494, 0.331, 0.001, -0.626, -1.129, 2.359,
+              0.374, 0.271, 0.154, 1.127, -4.402, 0.856)
+)
+
+# Create the coefficient plot with horizontal confidence intervals and dodging
+dodge <- position_dodge(width = 0.25) # Adjust the width to dodge as needed
+
+ggplot(coefficients_df, aes(y = Parameter, x = Estimate, color = DependentVariable)) +
+  geom_point(position = dodge) +
+  geom_errorbarh(aes(xmin = LowerCI, xmax = UpperCI), height = 0.2, position = dodge) +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  theme_minimal() +
+  labs(y = "Predictor", x = "Estimate", color = "Dependent Variable") +
+  theme(axis.text.y = element_text(angle = 0)) # No need to rotate y-axis labels
