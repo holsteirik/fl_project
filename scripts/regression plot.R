@@ -27,10 +27,14 @@ names(data_raw)[names(data_raw) == "BAIsum"] <- "Anxiety"
 names(data_raw)[names(data_raw) == "BDIsum"] <- "Depression"
 
 #make mancova model
-model <- manova(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + Extraversion + 
-                  Agreeableness + Conscientiousness + Neuroticism + Openness 
-                + Depression + Anxiety + Insomnia, data = data_raw)
+model <- manova(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + 
+                  Agreeableness + Conscientiousness + Neuroticism + 
+                  Depression + Anxiety + Insomnia, data = data_raw)
 
+fit <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + 
+            Agreeableness + Conscientiousness + Neuroticism + 
+            Depression + Anxiety + Insomnia, data = data_raw)
+summary(fit)
 #  mutate to standardized 
 data_raw |>
   mutate(
@@ -193,10 +197,11 @@ ggplot(coefficients_df, aes(y = Parameter, x = Estimate, color = DependentVariab
   labs(y = "Predictor", x = "Estimate", color = "Dependent Variable") +
   theme(axis.text.y = element_text(angle = 0)) # No need to rotate y-axis labels
 #################################################
-# Load the ggplot2 package
-# Load the ggplot2 package
-# Load the ggplot2 package
-library(ggplot2)
+fit <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + 
+            Agreeableness + Conscientiousness + Neuroticism + 
+            Depression + Anxiety + Insomnia, data = data)
+
+
 
 # Create a data frame with the parameter estimates and confidence intervals
 coefficients_df <- data.frame(
@@ -231,7 +236,115 @@ ggplot(coefficients_df, aes(y = Parameter, x = Estimate, color = DependentVariab
   geom_errorbarh(aes(xmin = LowerCI, xmax = UpperCI), height = 0.2, position = dodge) +
   geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.3) +
   theme_minimal() +
-  labs(y = "Predictor", x = "Estimate", color = "Dependent Variable") +
+  labs(y = "Predictor", x = "         Regression coefficient", color = "Dependent Variable") +
   theme(axis.text.y = element_text(angle = 0)) +
   scale_color_discrete(breaks = rev(levels(coefficients_df$DependentVariable))) # Reverse the legend order
+  
+########################################
+# Fit the multivariate linear model
+fit <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + 
+            Agreeableness + Conscientiousness + Neuroticism + 
+            Depression + Anxiety + Insomnia, data = data)
 
+# Extract coefficients and calculate confidence intervals
+coefs <- summary(fit)$coefficients  # Extract coefficients for each dependent variable
+confint <- confint(fit)  # Calculate confidence intervals for each dependent variable
+
+# Create a data frame with the parameter estimates and confidence intervals
+coefficients_df <- data.frame(
+  DependentVariable = rep(c("Behavioral Regulation", "Metacognition"), each = 7),
+  Parameter = rep(colnames(coefs)[, -1], 2),
+  Estimate = as.vector(t(coefs[, "Estimate"])),
+  LowerCI = as.vector(t(confint[, "2.5 %"])),
+  UpperCI = as.vector(t(confint[, "97.5 %"]))
+)
+
+# Reverse the factor levels for Parameter to get the desired order from top to bottom
+coefficients_df$Parameter <- factor(
+  coefficients_df$Parameter,
+  levels = rev(colnames(coefs)[, -1])
+)
+
+# Set the factor levels for DependentVariable to switch the order
+coefficients_df$DependentVariable <- factor(
+  coefficients_df$DependentVariable,
+  levels = c("Metacognition", "Behavioral Regulation")
+)
+
+
+# Convert the coefficients matrix into a data frame
+coefficients_df <- data.frame(
+  DependentVariable = rep(c("Behavioral Regulation", "Metacognition"), each = 7),
+  Parameter = rownames(coef),
+  Estimate = as.vector(coef),
+  stringsAsFactors = FALSE
+)
+
+# Reverse the factor levels for Parameter to get the desired order from top to bottom
+coefficients_df$Parameter <- factor(
+  coefficients_df$Parameter,
+  levels = rev(coefficients_df$Parameter)
+)
+
+# Set the factor levels for DependentVariable to switch the order
+coefficients_df$DependentVariable <- factor(
+  coefficients_df$DependentVariable,
+  levels = c("Metacognition", "Behavioral Regulation")
+)
+
+# Convert the coefficients matrix into a data frame
+coefficients_df <- data.frame(
+  DependentVariable = rep(c("Behavioral Regulation", "Metacognition"), each = 7),
+  Parameter = rownames(coef),
+  Estimate = as.vector(coef),
+  stringsAsFactors = FALSE
+)
+
+# Reverse the factor levels for Parameter to get the desired order from top to bottom
+coefficients_df$Parameter <- factor(
+  coefficients_df$Parameter,
+  levels = rev(coefficients_df$Parameter)
+)
+
+# Set the factor levels for DependentVariable to switch the order
+coefficients_df$DependentVariable <- factor(
+  coefficients_df$DependentVariable,
+  levels = c("Metacognition", "Behavioral Regulation")
+)
+
+# Load the ggplot2 library if not already loaded
+library(ggplot2)
+
+# Convert the coefficients matrix into a data frame
+coefficients_df <- data.frame(
+  DependentVariable = rep(c("Behavioral Regulation", "Metacognition"), each = 7),
+  Parameter = rownames(coef),
+  Estimate = as.vector(coef),
+  stringsAsFactors = FALSE
+)
+
+# Reverse the factor levels for Parameter to get the desired order from top to bottom
+coefficients_df$Parameter <- factor(
+  coefficients_df$Parameter,
+  levels = rev(coefficients_df$Parameter)
+)
+
+# Set the factor levels for DependentVariable to switch the order
+coefficients_df$DependentVariable <- factor(
+  coefficients_df$DependentVariable,
+  levels = c("Metacognition", "Behavioral Regulation")
+)
+
+# Load the ggplot2 library if not already loaded
+library(ggplot2)
+
+# Create the coefficient plot with horizontal confidence intervals and dodging
+dodge <- position_dodge(width = 0.25)
+ggplot(coefficients_df, aes(y = Parameter, x = Estimate, color = DependentVariable)) +
+  geom_point(position = dodge) +
+  geom_errorbarh(aes(xmin = Estimate - 1.96 * 0.01, xmax = Estimate + 1.96 * 0.01), height = 0.2, position = dodge) +
+  geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.3) +
+  theme_minimal() +
+  labs(y = "Predictor", x = "Regression coefficient", color = "Dependent Variable") +
+  theme(axis.text.y = element_text(angle = 0)) +
+  scale_color_discrete(breaks = rev(levels(coefficients_df$DependentVariable))) # Reverse the legend order
