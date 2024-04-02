@@ -242,7 +242,7 @@ ggplot(coefficients_df, aes(y = Parameter, x = Estimate, color = DependentVariab
   
 ########################################
 # Fit the multivariate linear model
-fit <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + 
+fit <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ as.factor(Sex) + 
             Agreeableness + Conscientiousness + Neuroticism + 
             Depression + Anxiety + Insomnia, data = data)
 

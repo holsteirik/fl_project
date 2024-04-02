@@ -140,3 +140,61 @@ apa_table <- apa.table(cor_matrix,
 
 # Print the APA-style table
 print(apa_table, style = "apa")
+
+#########################
+# how many score 65 or above?
+over_bri <- sum(data$BRIEF_AI_T > 64, na.rm = TRUE)
+over_mi <- sum(data$BRIEF_MI_T > 64, na.rm = TRUE)
+over_gec <- sum(data$BRIEF_GEF_T > 64, na.rm = TRUE)
+over_imp <- sum(data$BRIEF_IMPULSHEMMING_T > 64, na.rm = TRUE)
+over_fle <- sum(data$BRIEF_FLEKSIBILITET_T > 64, na.rm = TRUE)
+over_emo <- sum(data$BRIEF_EMOSJONELLKONTROLL_T > 64, na.rm = TRUE)
+over_sel <- sum(data$BRIEF_SELVMONITORERING_T > 64, na.rm = TRUE)
+over_ini <- sum(data$BRIEF_INITIERING_T > 64, na.rm = TRUE)
+over_arb <- sum(data$BRIEF_ARBEIDSHUKOMMELSE_T > 64, na.rm = TRUE)
+over_pla <- sum(data$BRIEF_PLANLEGGING_T  > 64, na.rm = TRUE)
+over_opp <- sum(data$BRIEF_OPPGAVEMONITORERING_T > 64, na.rm = TRUE)
+over_org <- sum(data$BRIEF_ORGANISERING_T  > 64, na.rm = TRUE)
+
+print(over_bri / sum(!is.na(data$BRIEF_AI_T)) * 100)
+print(over_mi / sum(!is.na(data$BRIEF_MI_T)) * 100)
+print(over_gec / sum(!is.na(data$BRIEF_GEF_T)) * 100)
+print(over_imp / sum(!is.na(data$BRIEF_IMPULSHEMMING_T)) * 100)
+print(over_fle / sum(!is.na(data$BRIEF_FLEKSIBILITET_T)) * 100)
+print(over_emo / sum(!is.na(data$BRIEF_EMOSJONELLKONTROLL_T)) * 100)
+print(over_sel / sum(!is.na(data$BRIEF_SELVMONITORERING_T)) * 100)
+print(over_ini / sum(!is.na(data$BRIEF_INITIERING_T)) * 100)
+print(over_arb / sum(!is.na(data$BRIEF_ARBEIDSHUKOMMELSE_T)) * 100)
+print(over_pla / sum(!is.na(data$BRIEF_PLANLEGGING_T)) * 100)
+print(over_opp / sum(!is.na(data$BRIEF_OPPGAVEMONITORERING_T)) * 100)
+print(over_org / sum(!is.na(data$BRIEF_ORGANISERING_T)) * 100)
+
+
+
+
+
+
+#########################################
+# Compute the 'insomnia' variable based on the provided logic
+data$insomnia <- ifelse(((data$BIS_1 >= 3 | data$BIS_2 >= 3 | data$BIS_3 >= 3) & 
+                           (data$BIS_5 >= 3 | data$BIS_6 >= 3)), 1, 0)
+
+# Remove missing values from the 'insomnia' variable
+insomnia_cleaned <- na.omit(data$insomnia)
+
+without_insomnia <- mean(insomnia_cleaned == 0) * 100
+with_insomnai <- mean(insomnia_cleaned == 1) * 100
+
+without_insomnia
+with_insomnai
+#################
+# means
+describe(data$BRIEF_AI_T)   
+describe(data$BRIEF_MI_T) 
+describe(data$BRIEF_GEF_T) 
+describe(data$BDIsum) 
+describe(data$BAIsum) 
+describe(data$neuro)
+describe(data$agree) 
+describe(data$consci)
+describe(data$SumbisNoFour) 
