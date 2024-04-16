@@ -7,16 +7,17 @@ library(apaTables)
 library(modelsummary)
 library(ggplot2)
 library(lm.beta)
+library(lme4)
 
 
-data_raw <- read_sav("data/forskerlinje_all_data_8feb.sav")
+data_raw <- read_sav("data/forskerlinje_friskestudenter_rettet_16_april.sav")
 
 
 options(max.print = 2500)
-describe(data)
+describe(data_raw)
 
-model <- manova(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(KJONN) + extra + agree + 
-                  consci + neuro + open + BDIsum + BAIsum + SumbisNoFour, 
+model <- manova(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ as.factor(KJONN) + agree + 
+                  consci + neuro + BDIsum + BAIsum + SumbisNoFour, 
                 data = data_raw)
 
 data_raw |>
@@ -36,11 +37,11 @@ print(multivariate_type_III)
 
 model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(KJONN) + SumbisNoFour + consci + 
                   agree + open + extra + neuro + BAIsum + BDIsum, 
-                data = data)
+                data = data_raw)
 
 model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(KJONN) + SumbisNoFour + consci + 
                  agree + open + extra + neuro + BAIsum + BDIsum, 
-               data = data)
+               data = data.raw)
 
 univariate_bri <- Anova(model_bri, type = "III")
 univariate_mi <- Anova(model_mi, type = "III")
@@ -223,4 +224,42 @@ print(plot)
 
 
 
+############
+# Multivariate resultater med type 3 ss med Car
+model_2 <- manova(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ as.factor(KJONN) + agree + 
+                 consci + neuro + BDIsum + BAIsum + SumbisNoFour, 
+               data = data_raw)
+summary(model_2)
+Anova(model_2, type = "III")
 
+# Paramester estimatater
+model3 <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ as.factor(KJONN) + agree + 
+               consci + neuro + BDIsum + BAIsum + SumbisNoFour, 
+             data = data_raw)
+summary(model3)
+
+summary_aov_model_2 <- summary.aov(model_2)
+
+# Univariate resultatet
+lm_BRIEF_AI_T <- lm(BRIEF_AI_T ~ as.factor(KJONN) + agree + consci + neuro + BDIsum + BAIsum + SumbisNoFour, data = data_raw)
+lm_BRIEF_MI_T <- lm(BRIEF_MI_T ~ as.factor(KJONN) + agree + consci + neuro + BDIsum + BAIsum + SumbisNoFour, data = data_raw)
+
+anova_BRIEF_AI_T <- Anova(lm_BRIEF_AI_T, type="III")
+anova_BRIEF_MI_T <- Anova(lm_BRIEF_MI_T, type="III")
+
+print(anova_BRIEF_AI_T)
+print(anova_BRIEF_MI_T)
+
+
+
+##################
+# Pass en multivariat lineær modell (mlm) ved hjelp av lm() med cbind() for de avhengige variablene
+mlm_model <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ as.factor(KJONN) + agree + 
+                  consci + neuro + BDIsum + BAIsum + SumbisNoFour, 
+                data = data_raw)
+
+# Bruk Anova() fra car-pakken for å få univariate resultater med Type III SS
+mlm_anova <- Anova(mlm_model, type="III")
+# Skriv ut univariate ANOVA-resultater med Type III SS
+print(summary(mlm_anova, split=list(as.factor(KJONN)=1, agree=2, consci=3, neuro=4, BDIsum=5, BAIsum=6, SumbisNoFour=7)))
+summary(mlm_anova)

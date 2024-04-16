@@ -3,7 +3,7 @@ library(tidyverse)
 library(gt)
 library(moments)
 
-data <- read_sav("data/forskerlinje_friskestudenter_bdi_og_insomni_variabler_retta_01.mars2024_runar.sav")
+data <- read_sav("data/forskerlinje_friskestudenter_rettet_16_april.sav")
 
 names(data)[names(data) == "KJONN"] <- "Sex"
 names(data)[names(data) == "SumbisNoFour"] <- "BIS"
@@ -155,4 +155,32 @@ percentage_40_49 <- (count_40_49 / total_scores) * 100
 # Print the percentages
 print(percentage_30_39)
 print(percentage_40_49)
+########################
+# med tibble
+selected_vars2 <- tibble(data %>%
+  select(BRI, MI, BDI, BAI, Neuroticism, Extraversion, Openness, 
+         Agreeableness, Conscientiousness, BIS))
+selected_vars2
+
+# Calculate correlation matrix
+cor_result <- selected_vars2 %>%
+  cor(method = "pearson", use = "complete.obs") %>%
+  round(2) %>%
+  as_tibble()
+
+# Save the current row names
+current_row_names <- rownames(cor_result)
+
+# Change row names to column names
+rownames(cor_result) <- colnames(cor_result)
+columnnames(cor_result) <- rownames(cor_result)
+
+# Convert row names to a new column
+cor_result <- cor_result %>%
+  rownames_to_column(var = "Variable")
+cor_result[upper.tri(cor_result, diag = TRUE)] <- NA
+# Set row names to numbers
+rownames(cor_result) <- 1:nrow(cor_result)
+cor_result
+
 
