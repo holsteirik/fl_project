@@ -22,20 +22,17 @@ options(max.print = 2500)
 describe(data)
 
 
+Sex <- as.factor(data$Sex)
 
-fit <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ as.factor(Sex) + 
-            Agreeableness + Conscientiousness + Neuroticism + 
-            Depression + Anxiety + Insomnia, data = data)
-Sex <- as.numeric(data$Sex)
-
-# Relative weight analysis
+# Relative weight analysis of BRI
 behaviour <- data %>%
   rwa(outcome = "BRIEF_AI_T",
       predictors = c("Sex", "Agreeableness", "Conscientiousness", 
                      "Neuroticism", "Depression", "Anxiety", "Insomnia"),
       applysigns = TRUE,
-      plot = TRUE)
+      plot = TRUE)¨
 
+# Relative weight analysis of MI
 meta <- data %>%
   rwa(outcome = "BRIEF_MI_T",
       predictors = c("Sex", "Agreeableness", "Conscientiousness", 
