@@ -7,13 +7,10 @@ library(apaTables)
 library(modelsummary)
 library(lm.beta)
 library(dplyr)
+library(broom)
 
-data_raw <- read_sav("data/forskerlinje_friskestudenter_bdi_og_insomni_variabler_retta_01.mars2024_runar.sav")
+data_raw <- read_sav("data/forskerlinje_friskestudenter_rettet_16_april.sav")
 
-
-options(max.print = 2500)
-describe(data)
-describe(data_raw)
 
 # Rename variables
 names(data_raw)[names(data_raw) == "KJONN"] <- "Sex"
@@ -26,15 +23,6 @@ names(data_raw)[names(data_raw) == "neuro"] <- "Neuroticism"
 names(data_raw)[names(data_raw) == "BAIsum"] <- "Anxiety"
 names(data_raw)[names(data_raw) == "BDIsum"] <- "Depression"
 
-#make mancova model
-model <- manova(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + 
-                  Agreeableness + Conscientiousness + Neuroticism + 
-                  Depression + Anxiety + Insomnia, data = data_raw)
-
-fit <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + 
-            Agreeableness + Conscientiousness + Neuroticism + 
-            Depression + Anxiety + Insomnia, data = data_raw)
-summary(fit)
 #  mutate to standardized 
 data_raw |>
   mutate(
@@ -43,21 +31,6 @@ data_raw |>
              Depression, Anxiety, Insomnia),
            scale), .before=1) -> 
   data
-
-#make mancova model
-model <- manova(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ factor(Sex) + 
-                  Agreeableness + Conscientiousness + Neuroticism + 
-                  Depression + Anxiety + Insomnia, data = data)
-summary(model)
-# Univariate results
-
-model_bri <- lm(cbind(BRIEF_AI_T) ~ factor(Sex) + Insomnia + Conscientiousness + 
-                  Agreeableness + Openness + Extraversion + Neuroticism + Anxiety + Depression, 
-                data = data)
-
-model_mi <- lm(cbind(BRIEF_MI_T) ~ factor(Sex) + Insomnia + Conscientiousness + 
-                 Agreeableness + Openness + Extraversion + Neuroticism + Anxiety + Depression, 
-               data = data)
 
 
 ##################################################
@@ -134,40 +107,7 @@ plot <- modelplot(models, coef_omit = "Intercept") +
 # Print or save the modified plot
 print(plot)
 
-##########################################################
-library(ggplot2)
-library(broom)
 
-# Fit separate linear models for each dependent variable without an intercept
-model_BRIEF_AI_T <- lm(BRIEF_AI_T ~ 0 + factor(Sex) + Agreeableness + 
-                         Conscientiousness + Neuroticism + Depression + 
-                         Anxiety + Insomnia, data = data)
-
-model_BRIEF_MI_T <- lm(BRIEF_MI_T ~ 0 + factor(Sex) + Agreeableness + 
-                         Conscientiousness + Neuroticism + Depression + 
-                         Anxiety + Insomnia, data = data)
-
-# Extract coefficients and confidence intervals
-tidy_BRIEF_AI_T <- tidy(model_BRIEF_AI_T, conf.int = TRUE)
-tidy_BRIEF_MI_T <- tidy(model_BRIEF_MI_T, conf.int = TRUE)
-
-# Add a column to indicate the dependent variable
-tidy_BRIEF_AI_T$Variable <- 'BRIEF_AI_T'
-tidy_BRIEF_MI_T$Variable <- 'BRIEF_MI_T'
-
-# Combine the results
-coefficients_df <- rbind(tidy_BRIEF_AI_T, tidy_BRIEF_MI_T)
-
-# Create the coefficient plot with horizontal confidence intervals and dodging
-dodge <- position_dodge(width = 0.25) # Adjust the width to dodge as needed
-
-ggplot(coefficients_df, aes(y = term, x = estimate, color = Variable)) +
-  geom_point(position = dodge) +
-  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high, height = 0), position = dodge) +
-  geom_vline(xintercept = 0, linetype = "dotted") +
-  theme_minimal() +
-  labs(y = "Predictor", x = "Estimate", color = "Dependent Variable") +
-  theme(axis.text.y = element_text(angle = 0)) # No need to rotate y-axis labels
 
 ################################################################
 # Parametre fra spss *sigh*
@@ -241,110 +181,44 @@ ggplot(coefficients_df, aes(y = Parameter, x = Estimate, color = DependentVariab
   scale_color_discrete(breaks = rev(levels(coefficients_df$DependentVariable))) # Reverse the legend order
   
 ########################################
-# Fit the multivariate linear model
-fit <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ as.factor(Sex) + 
-            Agreeableness + Conscientiousness + Neuroticism + 
-            Depression + Anxiety + Insomnia, data = data)
-
-# Extract coefficients and calculate confidence intervals
-coefs <- summary(fit)$coefficients  # Extract coefficients for each dependent variable
-confint <- confint(fit)  # Calculate confidence intervals for each dependent variable
-
-# Create a data frame with the parameter estimates and confidence intervals
-coefficients_df <- data.frame(
-  DependentVariable = rep(c("Behavioral Regulation", "Metacognition"), each = 7),
-  Parameter = rep(colnames(coefs)[, -1], 2),
-  Estimate = as.vector(t(coefs[, "Estimate"])),
-  LowerCI = as.vector(t(confint[, "2.5 %"])),
-  UpperCI = as.vector(t(confint[, "97.5 %"]))
-)
-
-# Reverse the factor levels for Parameter to get the desired order from top to bottom
-coefficients_df$Parameter <- factor(
-  coefficients_df$Parameter,
-  levels = rev(colnames(coefs)[, -1])
-)
-
-# Set the factor levels for DependentVariable to switch the order
-coefficients_df$DependentVariable <- factor(
-  coefficients_df$DependentVariable,
-  levels = c("Metacognition", "Behavioral Regulation")
-)
+# Load necessary library
 
 
-# Convert the coefficients matrix into a data frame
-coefficients_df <- data.frame(
-  DependentVariable = rep(c("Behavioral Regulation", "Metacognition"), each = 7),
-  Parameter = rownames(coef),
-  Estimate = as.vector(coef),
-  stringsAsFactors = FALSE
-)
+bri <- lm(cbind(BRIEF_AI_T) ~ Depression + Anxiety + Neuroticism + 
+            Agreeableness + Conscientiousness + Insomnia + as.factor(Sex), 
+                    data = data)
 
-# Reverse the factor levels for Parameter to get the desired order from top to bottom
-coefficients_df$Parameter <- factor(
-  coefficients_df$Parameter,
-  levels = rev(coefficients_df$Parameter)
-)
 
-# Set the factor levels for DependentVariable to switch the order
-coefficients_df$DependentVariable <- factor(
-  coefficients_df$DependentVariable,
-  levels = c("Metacognition", "Behavioral Regulation")
-)
+mi <- lm(cbind(BRIEF_MI_T) ~ Depression + Anxiety + Neuroticism + 
+            Agreeableness + Conscientiousness + Insomnia + as.factor(Sex), 
+                    data = data)
 
-# Convert the coefficients matrix into a data frame
-coefficients_df <- data.frame(
-  DependentVariable = rep(c("Behavioral Regulation", "Metacognition"), each = 7),
-  Parameter = rownames(coef),
-  Estimate = as.vector(coef),
-  stringsAsFactors = FALSE
-)
+# Get tidy summaries of the models
+tidy_bri <- tidy(bri)
+tidy_mi <- tidy(mi)
 
-# Reverse the factor levels for Parameter to get the desired order from top to bottom
-coefficients_df$Parameter <- factor(
-  coefficients_df$Parameter,
-  levels = rev(coefficients_df$Parameter)
-)
+# Add a column to distinguish the models
+tidy_mi$DependentVariable <- "Metacognition"
+tidy_bri$DependentVariable <- "Behavioral regulation"
 
-# Set the factor levels for DependentVariable to switch the order
-coefficients_df$DependentVariable <- factor(
-  coefficients_df$DependentVariable,
-  levels = c("Metacognition", "Behavioral Regulation")
-)
 
-# Load the ggplot2 library if not already loaded
-library(ggplot2)
+# Combine the data from both models
+coefficients_df <- rbind(tidy_bri, tidy_mi)
 
-# Convert the coefficients matrix into a data frame
-coefficients_df <- data.frame(
-  DependentVariable = rep(c("Behavioral Regulation", "Metacognition"), each = 7),
-  Parameter = rownames(coef),
-  Estimate = as.vector(coef),
-  stringsAsFactors = FALSE
-)
+# Calculate confidence intervals
+coefficients_df$LowerCI <- coefficients_df$estimate - 1.96 * coefficients_df$std.error
+coefficients_df$UpperCI <- coefficients_df$estimate + 1.96 * coefficients_df$std.error
 
-# Reverse the factor levels for Parameter to get the desired order from top to bottom
-coefficients_df$Parameter <- factor(
-  coefficients_df$Parameter,
-  levels = rev(coefficients_df$Parameter)
-)
 
-# Set the factor levels for DependentVariable to switch the order
-coefficients_df$DependentVariable <- factor(
-  coefficients_df$DependentVariable,
-  levels = c("Metacognition", "Behavioral Regulation")
-)
-
-# Load the ggplot2 library if not already loaded
-library(ggplot2)
-
-# Create the coefficient plot with horizontal confidence intervals and dodging
-dodge <- position_dodge(width = 0.25)
-ggplot(coefficients_df, aes(y = Parameter, x = Estimate, color = DependentVariable)) +
-  geom_point(position = dodge) +
-  geom_errorbarh(aes(xmin = Estimate - 1.96 * 0.01, xmax = Estimate + 1.96 * 0.01), height = 0.2, position = dodge) +
-  geom_vline(xintercept = 0, linetype = "dashed", alpha = 0.3) +
+# Create the plot
+plot <- ggplot(coefficients_df, aes(y = term, x = estimate, color = DependentVariable)) +
+  geom_point(position = position_dodge(width = 0.25)) +
+  geom_errorbarh(aes(xmin = LowerCI, xmax = UpperCI), height = 0.2, position = position_dodge(width = 0.25)) +
+  geom_vline(xintercept = 0, linetype = "dotted") +
   theme_minimal() +
   labs(y = "Predictor", x = "Regression coefficient", color = "Dependent Variable") +
-  theme(axis.text.y = element_text(angle = 0)) +
-  scale_color_discrete(breaks = rev(levels(coefficients_df$DependentVariable))) # Reverse the legend order
+  theme(axis.text.y = element_text(angle = 0))  
+
+# Print the plot
+print(plot)
+

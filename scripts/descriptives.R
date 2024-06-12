@@ -197,4 +197,56 @@ describe(data$BAIsum)
 describe(data$neuro)
 describe(data$agree) 
 describe(data$consci)
-describe(data$SumbisNoFour) 
+describe(data$SumbisNoFour)
+##################################
+# Enhanced QQ plot for BRIEF_AI_T
+qqplot_brief_ai_t <- qqplot(data, aes(sample = BRIEF_AI_T)) +
+  stat_qq() +
+  stat_qq_line(color = "red") +
+  ggtitle("Enhanced QQ Plot for BRIEF_AI_T") +
+  theme_minimal()
+
+# Enhanced QQ plot for BRIEF_MI_T
+qqplot_brief_mi_t <- ggplot(data, aes(sample = BRIEF_MI_T)) +
+  stat_qq() +
+  stat_qq_line(color = "red") +
+  ggtitle("Enhanced QQ Plot for BRIEF_MI_T") +
+  theme_minimal()
+
+# Print the plots
+print(qqplot_brief_ai_t)
+print(qqplot_brief_mi_t)
+
+# Boxplot for BRIEF_AI_T
+boxplot_brief_ai_t <- ggplot(data, aes(y = BRIEF_AI_T)) +
+  geom_boxplot(fill = "lightblue") +
+  ggtitle("Boxplot for BRIEF_AI_T") +
+  theme_minimal()
+
+# Boxplot for BRIEF_MI_T
+boxplot_brief_mi_t <- ggplot(data, aes(y = BRIEF_MI_T)) +
+  geom_boxplot(fill = "lightgreen") +
+  ggtitle("Boxplot for BRIEF_MI_T") +
+  theme_minimal()
+
+# Print the plots
+print(boxplot_brief_ai_t)
+print(boxplot_brief_mi_t)
+
+# Enhanced Boxplot for BRIEF_AI_T
+boxplot_brief_ai_t <- ggplot(data, aes(y = BRIEF_AI_T, x = 1)) +
+  geom_boxplot(fill = "lightblue", outlier.color = "red", outlier.shape = 1) +
+  geom_jitter(width = 0.1, color = "blue", size = 1.5, alpha = 0.5) +
+  labs(title = "Enhanced Boxplot for BRIEF_AI_T", x = NULL, y = "BRIEF_AI_T") +
+  theme_minimal()
+
+# Enhanced Boxplot for BRIEF_MI_T
+boxplot_brief_mi_t <- ggplot(data, aes(y = BRIEF_MI_T, x = 1)) +
+  geom_boxplot(fill = "lightgreen", outlier.color = "red", outlier.shape = 1) +
+  geom_jitter(width = 0.1, color = "green", size = 1.5, alpha = 0.5) +
+  labs(title = "Enhanced Boxplot for BRIEF_MI_T", x = NULL, y = "BRIEF_MI_T") +
+  theme_minimal()
+
+# Print the plots
+print(boxplot_brief_ai_t)
+print(boxplot_brief_mi_t)

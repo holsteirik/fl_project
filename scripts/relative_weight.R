@@ -1,14 +1,9 @@
 library(haven)
 library(psych)
 library(ggplot2)
-library(stats)
-library(car)
-library(apaTables)
-library(modelsummary)
-library(lm.beta)
 library(dplyr)
 library(rwa)
-library(tidyverse)
+
 
 data <- read_sav("data/forskerlinje_friskestudenter_rettet_16_april.sav")
 
@@ -31,7 +26,7 @@ describe(data)
 fit <- lm(cbind(BRIEF_AI_T, BRIEF_MI_T) ~ as.factor(Sex) + 
             Agreeableness + Conscientiousness + Neuroticism + 
             Depression + Anxiety + Insomnia, data = data)
-Sex <- as.factor(data$Sex)
+Sex <- as.numeric(data$Sex)
 
 # Relative weight analysis
 behaviour <- data %>%
@@ -45,13 +40,15 @@ meta <- data %>%
   rwa(outcome = "BRIEF_MI_T",
       predictors = c("Sex", "Agreeableness", "Conscientiousness", 
                      "Neuroticism", "Depression", "Anxiety", "Insomnia"),
-      applysigns = TRUE)
+      applysigns = T,
+      plot = T)
 
+# Print analysis
 behaviour
 meta
-##############
 
-# Plot BRI
+##############
+# Plot RWA
 plot_bri <- data.frame(
   Variables = behaviour$result$Variables,
   RescaledRelWeight = behaviour$result$Sign.Rescaled.RelWeight
@@ -82,6 +79,44 @@ ggplot(plot_mi, aes(x = reorder(Variables, RescaledRelWeight), y = RescaledRelWe
   scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, limit = c(min(plot_mi$RescaledRelWeight), max(plot_mi$RescaledRelWeight)), space = "Lab", name="Relative\nWeight") +
   theme(legend.position = "none",  # Hide the legend if not needed
         panel.border = element_rect(colour = "black", fill=NA, size=0.5))
+#######################
+# med korrekte farger
+# Calculate the combined limits for the color scale
+combined_min <- min(min(plot_bri$RescaledRelWeight), min(plot_mi$RescaledRelWeight))
+combined_max <- max(max(plot_bri$RescaledRelWeight), max(plot_mi$RescaledRelWeight))
+
+# Plot BRI
+plot_bri <- data.frame(
+  Variables = behaviour$result$Variables,
+  RescaledRelWeight = behaviour$result$Sign.Rescaled.RelWeight
+)
+
+ggplot(plot_bri, aes(x = reorder(Variables, RescaledRelWeight), y = RescaledRelWeight, fill = RescaledRelWeight)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +  # Flip the axes to make it a horizontal bar plot
+  labs(x = "Predictor Variables", y = "Rescaled Relative Weight (%)", title = "Relative Importance of Predictors for BRI") +
+  theme_minimal() +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, limit = c(combined_min, combined_max), space = "Lab", name="Relative\nWeight") +
+  theme(legend.position = "none",  # Hide the legend if not needed
+        panel.border = element_rect(colour = "black", fill=NA, size=0.3)) +
+  scale_y_continuous(breaks = seq(floor(combined_min / 10) * 10, ceiling(combined_max / 10) * 10, by = 10))  # Set y-axis breaks in increments of 10
+
+# Plot MI
+plot_mi <- data.frame(
+  Variables = meta$result$Variables,
+  RescaledRelWeight = meta$result$Sign.Rescaled.RelWeight
+)
+
+ggplot(plot_mi, aes(x = reorder(Variables, RescaledRelWeight), y = RescaledRelWeight, fill = RescaledRelWeight)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +  # Flip the axes to make it a horizontal bar plot
+  labs(x = "Predictor Variables", y = "Rescaled Relative Weight (%)", title = "Relative Importance of Predictors for MI") +
+  theme_minimal() +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, limit = c(combined_min, combined_max), space = "Lab", name="Relative\nWeight") +
+  theme(legend.position = "none",  # Hide the legend if not needed
+        panel.border = element_rect(colour = "black", fill=NA, size=0.5)) +
+  scale_y_continuous(breaks = seq(floor(combined_min / 10) * 10, ceiling(combined_max / 10) * 10, by = 10))  # Set y-axis breaks in increments of 10
+
 
 #############################
 # Kjønnsforskjeller
