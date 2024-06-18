@@ -1,5 +1,3 @@
-#install.packages(c("tidyverse", "corrr", "ggcorrplot","lm.beta","lavaan","semTools","semTable","semPlot","sjPlot", "flextable"))
-
 library(lm.beta) # Get standardized regression coefficients
 library(lavaan) # The lavaan SEM package
 library(semPlot) # Plotting of path models (the plot_model function uses this)
@@ -12,7 +10,7 @@ library(tidyverse)
 
 # Read the data 
 
-data <- read_sav("data/forskerlinje_all_data_8feb.sav")
+data <- read_sav("data/forskerlinje_friskestudenter_rettet_16_april.sav")
 
 options(max.print = 2500)
 describe(data)
@@ -42,11 +40,11 @@ plot_model <- function (model, whatLabels="est", title="" )
 
 # Enfaktor modell for EF
 model1 <- "EF =~ 
-            BRIEF_IMPULSHEMMING_RAW + BRIEF_FLEKSIBILITET_RAW + 
-            BRIEF_EMOSJONELLKONTROLL_RAW + BRIEF_SELVMONITORERING_RAW + 
-            BRIEF_INITIERING_RAW + BRIEF_ARBEIDSHUKOMMELSE_RAW + 
-            BRIEF_PLANLEGGING_RAW + BRIEF_OPPGAVEMONITORERING_RAW +
-            BRIEF_ORGANISERING_RAW"
+            BRIEF_IMPULSHEMMING_T + BRIEF_FLEKSIBILITET_T + 
+            BRIEF_EMOSJONELLKONTROLL_T + BRIEF_SELVMONITORERING_T + 
+            BRIEF_INITIERING_T + BRIEF_ARBEIDSHUKOMMELSE_T + 
+            BRIEF_PLANLEGGING_T + BRIEF_OPPGAVEMONITORERING_T +
+            BRIEF_ORGANISERING_T"
 
 # Running the model
 # Fit the model using RMLE estimator
@@ -62,12 +60,12 @@ plot_model(model1_fit, "std")
 
 # Tofaktor modell for EF
 model2 <- "AI =~ 
-            BRIEF_IMPULSHEMMING_RAW + BRIEF_FLEKSIBILITET_RAW + 
-            BRIEF_EMOSJONELLKONTROLL_RAW + BRIEF_SELVMONITORERING_RAW
+            BRIEF_IMPULSHEMMING_T + BRIEF_FLEKSIBILITET_T + 
+            BRIEF_EMOSJONELLKONTROLL_T + BRIEF_SELVMONITORERING_T
           MI =~ 
-            BRIEF_INITIERING_RAW + BRIEF_ARBEIDSHUKOMMELSE_RAW + 
-            BRIEF_PLANLEGGING_RAW + BRIEF_OPPGAVEMONITORERING_RAW +
-            BRIEF_ORGANISERING_RAW
+            BRIEF_INITIERING_T + BRIEF_ARBEIDSHUKOMMELSE_T + 
+            BRIEF_PLANLEGGING_T + BRIEF_OPPGAVEMONITORERING_T +
+            BRIEF_ORGANISERING_T
           AI ~~ MI"
 
 model2_fit <- sem(model2, meanstructure = TRUE, data =data,estimator = "ML")
@@ -78,13 +76,13 @@ anova(model1_fit, model2_fit)
 
 # Trefaktor modell
 model3 <- "Behavioural regulation =~ 
-            BRIEF_IMPULSHEMMING_RAW + BRIEF_SELVMONITORERING_RAW
+            BRIEF_IMPULSHEMMING_T + BRIEF_SELVMONITORERING_T
            Emotinal regulation =~ 
-            BRIEF_FLEKSIBILITET_RAW + BRIEF_EMOSJONELLKONTROLL_RAW
+            BRIEF_FLEKSIBILITET_T + BRIEF_EMOSJONELLKONTROLL_T
            Metacognition =~ 
-            BRIEF_INITIERING_RAW + BRIEF_ARBEIDSHUKOMMELSE_RAW + 
-            BRIEF_PLANLEGGING_RAW + BRIEF_OPPGAVEMONITORERING_RAW +
-            BRIEF_ORGANISERING_RAW" 
+            BRIEF_INITIERING_T + BRIEF_ARBEIDSHUKOMMELSE_T + 
+            BRIEF_PLANLEGGING_T + BRIEF_OPPGAVEMONITORERING_T +
+            BRIEF_ORGANISERING_T" 
 
 model3_fit <- sem(model3, meanstructure = TRUE, data = data, estimator = "ML")
 
@@ -102,16 +100,16 @@ plot_model(model3_fit, "std")
 
 # Firefakotor modell
 model4 <- "BR =~ 
-            BRIEF_IMPULSHEMMING_RAW + BRIEF_SELVMONITORERING_RAW
+            BRIEF_IMPULSHEMMING_T + BRIEF_SELVMONITORERING_T
            ER =~ 
-            BRIEF_FLEKSIBILITET_RAW + BRIEF_EMOSJONELLKONTROLL_RAW
+            BRIEF_FLEKSIBILITET_T + BRIEF_EMOSJONELLKONTROLL_T
            MI_external =~ 
-            BRIEF_INITIERING_RAW + BRIEF_ARBEIDSHUKOMMELSE_RAW + 
-            BRIEF_PLANLEGGING_RAW 
+            BRIEF_INITIERING_T + BRIEF_ARBEIDSHUKOMMELSE_T + 
+            BRIEF_PLANLEGGING_T 
            MI_internal =~
-            BRIEF_OPPGAVEMONITORERING_RAW +
-            BRIEF_ORGANISERING_RAW" 
-                        
+            BRIEF_OPPGAVEMONITORERING_T +
+            BRIEF_ORGANISERING_T" 
+
 model4_fit <- lavaan::sem(model4, meanstructure = TRUE, data = data, 
                           estimator = "ML")
 
@@ -141,13 +139,13 @@ cat("CFI for Model 4:", cfi_model4, "\n")
 
 # Compute and store the fit measures including the RMSEA interval
 fit_measures_model1 <- fitMeasures(model1_fit, 
-              c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
+                                   c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
 fit_measures_model2 <- fitMeasures(model2_fit, 
-              c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
+                                   c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
 fit_measures_model3 <- fitMeasures(model3_fit, 
-              c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
+                                   c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
 fit_measures_model4 <- fitMeasures(model4_fit, 
-              c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
+                                   c("chisq", "df", "cfi", "rmsea", "srmr", "tli"), rmsea.ci = TRUE)
 
 # Print the fit measures for each model
 print(fit_measures_model1)
@@ -156,40 +154,6 @@ print(fit_measures_model3)
 print(fit_measures_model4)
 
 # Calculate mean for each column and round to 2 decimal places
-mean_values <- round(colMeans(data[, c("BRIEF_IMPULSHEMMING_RAW", "BRIEF_FLEKSIBILITET_RAW", 
-                                       "BRIEF_EMOSJONELLKONTROLL_RAW", "BRIEF_SELVMONITORERING_RAW", 
-                                       "BRIEF_INITIERING_RAW", "BRIEF_ARBEIDSHUKOMMELSE_RAW",
-                                       "BRIEF_PLANLEGGING_RAW", "BRIEF_OPPGAVEMONITORERING_RAW",
-                                       "BRIEF_ORGANISERING_RAW")]), 2)
-
-# Calculate standard deviation for each column and round to 2 decimal places
-sd_values <- round(apply(data[, c("BRIEF_IMPULSHEMMING_RAW", "BRIEF_FLEKSIBILITET_RAW", 
-                                  "BRIEF_EMOSJONELLKONTROLL_RAW", "BRIEF_SELVMONITORERING_RAW", 
-                                  "BRIEF_INITIERING_RAW", "BRIEF_ARBEIDSHUKOMMELSE_RAW",
-                                  "BRIEF_PLANLEGGING_RAW", "BRIEF_OPPGAVEMONITORERING_RAW",
-                                  "BRIEF_ORGANISERING_RAW")], 2, sd), 2)
-
-# Display the mean values and standard deviations
-mean_values
-sd_values
-# Select the specified columns and calculate the correlation matrix
-cor_matrix <- cor(data[, c("BRIEF_IMPULSHEMMING_RAW", "BRIEF_FLEKSIBILITET_RAW", 
-                           "BRIEF_EMOSJONELLKONTROLL_RAW", "BRIEF_SELVMONITORERING_RAW", 
-                           "BRIEF_INITIERING_RAW", "BRIEF_ARBEIDSHUKOMMELSE_RAW",
-                           "BRIEF_PLANLEGGING_RAW", "BRIEF_OPPGAVEMONITORERING_RAW",
-                           "BRIEF_ORGANISERING_RAW")])
-
-# Display the correlation matrix
-cor_matrix
-
-
-
-# lag penere 3 faktormodell
-semPaths(model3_fit, layout="tree", style="lisrel", intercepts=FALSE, 
-         edge.label.position = 0.60, whatLabels="std", 
-         edge.label.cex=0.8, label.cex=0.8, sizeMan=8, 
-         color = "white", sizeLat=10, residuals=TRUE, 
-         esize=2, asize=3, fade=FALSE, mar=c(5,5,5,5), 
-         edge.label.margin =0.05, rotation = 2, nCharNodes = 20)
-
-
+mean_values <- round(colMeans(data[, c("BRIEF_IMPULSHEMMING_T", "BRIEF_FLEKSIBILITET_T", 
+                                       "BRIEF_EMOSJONELLKONTROLL_T", "BRIEF_SELVMONITORERING_T", 
+                                       "BR

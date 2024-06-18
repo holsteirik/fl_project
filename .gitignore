@@ -1,6 +1,5 @@
 # Ignore data folder
 fl_project/data/
-fl_project/docs/
 fl_project/images/
 
 # Ignore specific files in fl_project folder
