@@ -3,7 +3,7 @@
     "path": "~/GitHub/fl_project/scripts/mancova.R",
     "project_path": "scripts/mancova.R",
     "type": "r_source",
-    "hash": "1017636354",
+    "hash": "0",
     "contents": "",
     "dirty": true,
     "created": 1717069546602.0,
@@ -13,8 +13,8 @@
         "tempName": "Untitled1",
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "16,0",
-        "scrollLine": "13"
+        "cursorPosition": "17,0",
+        "scrollLine": "0"
     },
     "folds": "",
     "lastKnownWriteTime": 1718183801,
