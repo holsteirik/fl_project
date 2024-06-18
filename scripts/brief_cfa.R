@@ -7,6 +7,7 @@ library(lavaanPlot)
 library(semTools)
 library(semTools)
 library(tidyverse)
+library(writexl)
 
 # Read the data 
 
@@ -125,7 +126,7 @@ cfi_model3 <- fitMeasures(model3_fit, c("cfi"))["cfi"]
 cfi_model4 <- fitMeasures(model4_fit, c("cfi"))["cfi"]
 
 # sjikvadrattest av modellene
-anova(model1_fit, model2_fit)
+anova(model1_fit, model2_fit, use.scaled = TRUE)
 anova(model2_fit, model3_fit)
 anova(model3_fit, model4_fit)
 anova(model2_fit, model4_fit)
@@ -139,17 +140,38 @@ cat("CFI for Model 4:", cfi_model4, "\n")
 
 # Compute and store the fit measures including the RMSEA interval
 fit_measures_model1 <- fitMeasures(model1_fit, 
-                                   c("chisq", "df", "cfi", "rmsea", "srmr", "tli", "aic", "bic"), rmsea.ci = TRUE)
+                                   c("chisq", "df", "cfi", "rmsea.ci", "srmr", "tli", "aic", "bic"), rmsea.ci = TRUE)
 fit_measures_model2 <- fitMeasures(model2_fit, 
-                                   c("chisq", "df", "cfi", "rmsea", "srmr", "tli", "aic", "bic"), rmsea.ci = TRUE)
+                                   c("chisq", "df", "cfi", "rmsea.ci", "srmr", "tli", "aic", "bic"), rmsea.ci = TRUE)
 fit_measures_model3 <- fitMeasures(model3_fit, 
-                                   c("chisq", "df", "cfi", "rmsea", "srmr", "tli", "aic", "bic"), rmsea.ci = TRUE)
+                                   c("chisq", "df", "cfi", "rmsea.ci", "srmr", "tli", "aic", "bic"), rmsea.ci = TRUE)
 fit_measures_model4 <- fitMeasures(model4_fit, 
-                                   c("chisq", "df", "cfi", "rmsea", "srmr", "tli", "aic", "bic"), rmsea.ci = TRUE)
+                                   c("chisq", "df", "cfi", "rmsea.ci", "srmr", "tli", "aic", "bic"), rmsea.ci = TRUE)
 
 # Print the fit measures for each model
 print(fit_measures_model1)
 print(fit_measures_model2)
 print(fit_measures_model3)
 print(fit_measures_model4)
+
+#####
+# lag tabell i excel
+# Install and load the writexl package if not already installed
+
+
+# Combine the fit measures into a data frame
+fit_measures <- data.frame(
+  Model = c("Model 1", "Model 2", "Model 3", "Model 4"),
+  Chisq = c(fit_measures_model1["chisq"], fit_measures_model2["chisq"], fit_measures_model3["chisq"], fit_measures_model4["chisq"]),
+  DF = c(fit_measures_model1["df"], fit_measures_model2["df"], fit_measures_model3["df"], fit_measures_model4["df"]),
+  CFI = c(fit_measures_model1["cfi"], fit_measures_model2["cfi"], fit_measures_model3["cfi"], fit_measures_model4["cfi"]),
+  RMSEA = c(fit_measures_model1["rmsea"], fit_measures_model2["rmsea"], fit_measures_model3["rmsea"], fit_measures_model4["rmsea"]),
+  SRMR = c(fit_measures_model1["srmr"], fit_measures_model2["srmr"], fit_measures_model3["srmr"], fit_measures_model4["srmr"]),
+  TLI = c(fit_measures_model1["tli"], fit_measures_model2["tli"], fit_measures_model3["tli"], fit_measures_model4["tli"]),
+  AIC = c(fit_measures_model1["aic"], fit_measures_model2["aic"], fit_measures_model3["aic"], fit_measures_model4["aic"]),
+  BIC = c(fit_measures_model1["bic"], fit_measures_model2["bic"], fit_measures_model3["bic"], fit_measures_model4["bic"])
+)
+
+# Write the fit measures to an Excel file
+write_xlsx(fit_measures, "fit_measures.xlsx")
 
